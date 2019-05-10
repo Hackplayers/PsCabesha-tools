@@ -97,7 +97,7 @@ Write-Host "`n[+] ================================== Rutas Estaticas ===========
 route print
 Write-Host "`n[+] ==================================== Tabla ARP ===========================================`n"
 arp -A
-Write-Host "`n[+] ==================================== Conexiones Activas ===========================================`n"
+Write-Host "`n[+] ============================== Puertos a la Escucha =======================================`n"
 
 Get-NetTCPConnection | ? {$_.State -eq "Listen"} | Select-Object LocalAddress, Localport, state |  sort localport| Format-Table  } | Wait-Job | Receive-Job
 
