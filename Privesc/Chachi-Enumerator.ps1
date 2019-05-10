@@ -71,8 +71,7 @@ $PC = New-Object psobject -Property @{
 "Disco Duro" = $Disco_duro
 }
 
-$PC #| select-Object Nombre, "Sistema Operativo", "Windows Version", "Dominio", "Modelo", "Num. Procesadores", "Memoria RAM", "Disco Duro", "Direccion IP", "MAC", "Usuarios" | fl
-}
+$PC }
 function Get-Discosduros {Get-PSDrive | where {$_.Provider -like "Microsoft.PowerShell.Core\FileSystem"}| ft Name,Root}
 function Get-Usuarios {
 $usuarios = (Get-LocalUser | Where-Object {$_.enabled -eq $true}).name
