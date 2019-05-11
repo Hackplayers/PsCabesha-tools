@@ -1,4 +1,4 @@
-﻿function sherlock {
+
 
 $Global:ExploitTable = $null
 
@@ -807,7 +807,7 @@ function Find-CVE20188897 {
     
 }
 
-}
+
 
 
 
