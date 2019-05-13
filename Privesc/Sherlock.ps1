@@ -1,5 +1,4 @@
-
-
+﻿
 $Global:ExploitTable = $null
 
 function Get-FileVersionInfo ($FilePath) {
@@ -318,22 +317,11 @@ function Find-MS13081 {
 
 function Find-MS14058 {
 
-    $MSBulletin = "MS14-058"
-    $Architecture = Get-Architecture
-
-    if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
-
+        $MSBulletin = "MS14-058"
+        $Architecture = Get-Architecture
         $Path = $env:windir + "\system32\win32k.sys"
-
-    } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
-
-        $Path = $env:windir + "\sysnative\win32k.sys"
-
-    }
-
         $VersionInfo = Get-FileVersionInfo($Path)
         $VersionInfo = $VersionInfo.Split(".")
-
         $Build = $VersionInfo[2]
         $Revision = $VersionInfo[3].Split(" ")[0]
 
@@ -390,7 +378,16 @@ function Find-MS15076 {
     
 
     $MSBulletin  = "MS15-076"
-    $Path = $env:windir + "\system32\rpcrt4.dll"
+          if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
+
+        $Path = $env:windir + "\system32\rpcrt4.dll"
+
+    } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
+
+        $Path = $env:windir + "\sysnative\rpcrt4.dll"
+
+    }
+    
   
     $VersionInfo = Get-FileVersionInfo($Path)
     $VersionInfo = $VersionInfo.Split(".")
@@ -411,7 +408,6 @@ function Find-MS15076 {
 function Find-MS15078 {
 
     $MSBulletin = "MS15-078"
-
     $Path = $env:windir + "\system32\atmfd.dll"
     $VersionInfo = Get-FileVersionInfo($Path)
     $VersionInfo = $VersionInfo.Split(" ")
@@ -555,7 +551,16 @@ function Find-MS16072 {
     
 
     $MSBulletin  = "MS16-072"
-    $Path = $env:windir + "\system32\gpprefcl.dll"
+                if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
+
+        $Path = $env:windir + "\system32\gpprefcl.dll"
+
+    } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
+
+        $Path = $env:windir + "\sysnative\gpprefcl.dll"
+
+    }
+    
     $Architecture = Get-Architecture
   
     $VersionInfo = Get-FileVersionInfo($Path)
@@ -744,8 +749,16 @@ function Find-CVE20180952 {
     
 
     $CVEID  = "2018-0952"
-    $Path = $env:windir + "\system32\ntoskrnl.exe"
-  
+    if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
+
+        $Path = $env:windir + "\system32\ntoskrnl.exe"
+
+    } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
+
+        $Path = $env:windir + "\sysnative\ntoskrnl.exe"
+
+    }
+      
     $VersionInfo = Get-FileVersionInfo($Path)
     $VersionInfo = $VersionInfo.Split(".")
     $Build = $VersionInfo[2]
@@ -768,8 +781,16 @@ function Find-CVE20188440 {
     
 
     $CVEID  = "2018-8440"
-    $Path = $env:windir + "\system32\ntoskrnl.exe"
-  
+        if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
+
+        $Path = $env:windir + "\system32\ntoskrnl.exe"
+
+    } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
+
+        $Path = $env:windir + "\sysnative\ntoskrnl.exe"
+
+    }
+     
     $VersionInfo = Get-FileVersionInfo($Path)
     $VersionInfo = $VersionInfo.Split(".")
     $Build = $VersionInfo[2]
