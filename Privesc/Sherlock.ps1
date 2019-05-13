@@ -376,7 +376,7 @@ function Find-MS15051 {
 
 function Find-MS15076 {
     
-
+    $Architecture = Get-Architecture
     $MSBulletin  = "MS15-076"
           if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
 
@@ -384,7 +384,7 @@ function Find-MS15076 {
 
     } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
 
-        $Path = $env:windir + "\sysnative\rpcrt4.dll"
+        $Path = $env:windir + "\syswow64\rpcrt4.dll"
 
     }
     
@@ -551,13 +551,14 @@ function Find-MS16072 {
     
 
     $MSBulletin  = "MS16-072"
+    $Architecture = Get-Architecture
                 if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
 
         $Path = $env:windir + "\system32\gpprefcl.dll"
 
     } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
 
-        $Path = $env:windir + "\sysnative\gpprefcl.dll"
+        $Path = $env:windir + "\SysWOW64\gpprefcl.dll"
 
     }
     
@@ -749,16 +750,7 @@ function Find-CVE20180952 {
     
 
     $CVEID  = "2018-0952"
-    if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
-
-        $Path = $env:windir + "\system32\ntoskrnl.exe"
-
-    } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
-
-        $Path = $env:windir + "\sysnative\ntoskrnl.exe"
-
-    }
-      
+    $Path = $env:windir + "\system32\ntoskrnl.exe"
     $VersionInfo = Get-FileVersionInfo($Path)
     $VersionInfo = $VersionInfo.Split(".")
     $Build = $VersionInfo[2]
@@ -781,16 +773,8 @@ function Find-CVE20188440 {
     
 
     $CVEID  = "2018-8440"
-        if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
-
-        $Path = $env:windir + "\system32\ntoskrnl.exe"
-
-    } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
-
-        $Path = $env:windir + "\sysnative\ntoskrnl.exe"
-
-    }
-     
+    $Architecture = Get-Architecture
+    $Path = $env:windir + "\system32\ntoskrnl.exe"
     $VersionInfo = Get-FileVersionInfo($Path)
     $VersionInfo = $VersionInfo.Split(".")
     $Build = $VersionInfo[2]
@@ -812,7 +796,18 @@ function Find-CVE20188440 {
 function Find-CVE20188897 {
 
     $CVEID = "2018-8897"
-    $Path = $env:windir + "\system32\coremessaging.dll"
+    $Architecture = Get-Architecture
+    
+    $MSBulletin  = "MS16-072"
+                if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
+
+        $Path = $env:windir + "\system32\coremessaging.dll"
+
+    } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
+
+        $Path = $env:windir + "\SysWOW64\coremessaging.dll"
+
+    }
     $VersionInfo = Get-FileVersionInfo($Path)
     $VersionInfo = $VersionInfo.Split(".")
     $Build = $VersionInfo[2]
