@@ -1013,6 +1013,7 @@ if ( (test-path "$usuario\appdata\Roaming\mRemoteNG") -eq $true ) {
 Write-Host "`n[+] ================================== Encontrada configuracion de mRemoteNG  ==================================`n"
 Write-Host "[+] $usuario\appdata\Roaming\mRemoteNG`n"
 (ls $usuario\appdata\Roaming\mRemoteNG).FullName
+Write-Host "[+] Herramienta para descifrar `nhttps://github.com/kmahyyg/mremoteng-decrypt"
 
 } else {}
 
