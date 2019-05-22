@@ -1,4 +1,3 @@
-﻿
 $Global:ExploitTable = $null
 
 function Get-FileVersionInfo ($FilePath) {
