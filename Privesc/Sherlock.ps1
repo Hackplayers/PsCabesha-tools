@@ -757,6 +757,7 @@ function Find-CVE20180952 {
     switch ( $Build ) {
 
 
+        9200  { $VulnStatus = @("Not Vulnerable","Appears Vulnerable")[ $Revison -lt 17946 ] }
         10240 { $VulnStatus = @("Not Vulnerable","Appears Vulnerable")[ $Revison -lt 17946 ] }
         14393 { $VulnStatus = @("Not Vulnerable","Appears Vulnerable")[ $Revison -lt 2430 ] }
         15063 { $VulnStatus = @("Not Vulnerable","Appears Vulnerable")[ $Revison -lt 1266 ] }
@@ -780,7 +781,7 @@ function Find-CVE20188440 {
     $Revision = $VersionInfo[3].Split(" ")[0]
     switch ( $Build ) {
 
-
+        9200  { $VulnStatus = @("Not Vulnerable","Appears Vulnerable")[ $Revison -lt 17976 ]}
         10240 { $VulnStatus = @("Not Vulnerable","Appears Vulnerable")[ $Revison -lt 17976 ] }
         14393 { $VulnStatus = @("Not Vulnerable","Appears Vulnerable")[ $Revison -lt 2485 ] }
         15063 { $VulnStatus = @("Not Vulnerable","Appears Vulnerable")[ $Revison -lt 1324 ] }
@@ -821,13 +822,4 @@ function Find-CVE20188897 {
     Set-ExploitTable $CVEID  $VulnStatus
     
 }
-
-
-
-
-
-
-
-
-
 
