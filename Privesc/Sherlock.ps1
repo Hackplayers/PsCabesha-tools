@@ -1,4 +1,34 @@
 $Global:ExploitTable = $null
+# Build References
+# 
+# [3790:    2003, 2003 R2 & XP]
+# 6000:    Vista
+# 6001:    2008
+# 6002:    2008 SP2 & Vista SP2
+# 7600:    2008 R2 & 7
+# 9200:    2012 & 8
+# 9600:    2012 R2 & 8.1
+# 10240:   10 1507
+# 10586:   10 1511
+# 14393:   2016 & 10 1607
+# 15063:   10 1703
+# 16299:   10 1709
+# 17134:   10 1803
+#     ?:   10 1809
+# Version Number: 	Operating System:
+# 5.0 	Windows 2000
+# 5.1 	Windows XP
+# 5.2 	Windows XP 64bit
+# 5.2 	Windows Server 2003 / R2
+# 6.0 	Windows Vista / Windows Server 2008
+# 6.1 	Windows 7 / Windows Server 2008 R2
+# 6.2 	Windows 8 / Windows Server 2012
+# 6.3 	Windows 8.1 / Windows Server 2012 R2
+# 10.0 	Windows 10 (Preview)
+
+ 
+
+
 
 function Get-FileVersionInfo ($FilePath) {
 
@@ -9,20 +39,21 @@ function Get-FileVersionInfo ($FilePath) {
 
 }
 
-function Get-InstalledSoftware($SoftwareName) {
-
-    $SoftwareVersion = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -eq $SoftwareName } | Select-Object Version
-    $SoftwareVersion = $SoftwareVersion.Version  # I have no idea what I'm doing
+#function Get-InstalledSoftware($SoftwareName) {
+#
+#    $SoftwareVersion = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -eq $SoftwareName } | Select-Object Version
+#    $SoftwareVersion = $SoftwareVersion.Version  # I have no idea what I'm doing
     
-    return $SoftwareVersion
+#    return $SoftwareVersion
 
-}
+#}
 
 function Get-Architecture {
 
     # This is the CPU architecture.  Returns "64-bit" or "32-bit".
-    $CPUArchitecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture
-
+     
+    if ((Test-Path "c:\Program Files (x86)") -eq $true) {$CPUArchitecture = "64-bits" } else {$CPUArchitecture = "32 bits"}
+    #$CPUArchitecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture
     # This is the process architecture, e.g. are we an x86 process running on a 64-bit system.  Retuns "AMD64" or "x86".
     $ProcessArchitecture = $env:PROCESSOR_ARCHITECTURE
 
@@ -32,7 +63,7 @@ function Get-Architecture {
 
 function Get-CPUCoreCount {
 
-    $CoreCount = (Get-WmiObject Win32_Processor).NumberOfLogicalProcessors
+    $CoreCount = ((Get-ItemProperty "registry::HKLM\HARDWARE\DESCRIPTION\System\CentralProcessor\*").Identifier).count
     
     return $CoreCount
 
@@ -57,7 +88,7 @@ function New-ExploitTable {
     $Global:ExploitTable.Rows.Add("Task Scheduler .XML","MS10-092","2010-3338, 2010-3888","https://www.exploit-db.com/exploits/19930/")
     # MS11
     $Global:ExploitTable.Rows.Add("The Ancillary Function Driver (AFD) in afd.sys does not properly validate user-mode input, which allows local users to elevate privileges.","MS11-046","N/A","https://www.exploit-db.com/exploits/40564/")
-    $Global:ExploitTable.Rows.Add("An EoP exists due to a flaw in the AfdJoinLeaf function of the afd.sys driver, allowing data overwrite in kernel space.","MS11-080","N/A","https://github.com/rapid7/metasploit-framework/blob/master/modules/exploits/windows/local/ms11_080_afdjoinleaf.rb")
+    $Global:ExploitTable.Rows.Add("An EoP exists due to a flaw in the AfdJoinLeaf function of the afd.sys. WinXP/2K3","MS11-080","N/A","https://github.com/rapid7/metasploit-framework/blob/master/modules/exploits/windows/local/ms11_080_afdjoinleaf.rb")
     # MS12
     $Global:ExploitTable.Rows.Add("An EoP exists due to the way the Windows User Mode Scheduler handles system requests, which can be exploited to execute arbitrary code in kernel mode.","MS12-042","N/A","https://www.exploit-db.com/exploits/20861/")
     # MS13
@@ -88,14 +119,6 @@ function New-ExploitTable {
 
 
 }
-
-
-
-
-
-
-
-
 
 function Set-ExploitTable ($MSBulletin, $VulnStatus) {
 
@@ -141,15 +164,21 @@ function Find-AllVulns {
         Find-MS10015
         Find-MS10092
         Find-MS11046
+        Find-MS11080
+        Find-MS12042
+        Find-MS13005
         Find-MS13053
         Find-MS13081
         Find-MS14058
         Find-MS15051
+        Find-Ms15076
         Find-MS15078
+        Find-MS16014
         Find-MS16016
         Find-MS16032
         Find-MS16034
         Find-MS16135
+        Find-Ms16072
         Find-CVE20170263
         Find-CVE20177199
         Find-MS17012
@@ -247,6 +276,63 @@ function Find-MS11046 {
 
 
 }
+
+function Find-MS11080 {
+
+    $MSBulletin  = "MS11-080"
+    $Path = $env:windir + "\system32\drivers\afd.sys"
+    $VersionInfo = Get-FileVersionInfo($Path)
+    $VersionInfo = $VersionInfo.Split(".")
+    $Build = $VersionInfo[2]
+    $Revision = $VersionInfo[3].Split(" ")[0]
+    if ([int](Get-ItemProperty "registry::HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion").CurrentVersion.split(".")[0] -lt 6 ) {Set-ExploitTable $MSBulletin  $VulnStatus} else {
+    switch ( $Build ) {
+
+        default { $VulnStatus = "Not Vulnerable" }
+
+ }   }
+    Set-ExploitTable $MSBulletin  $VulnStatus
+ 
+
+
+
+}
+
+function Find-MS12042 {
+
+    $MSBulletin  = "MS12-042"
+    if ([int](Get-ItemProperty "registry::HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion").CurrentVersion.split(".")[0] -lt 6 ) {Set-ExploitTable $MSBulletin  $VulnStatus} else {
+    switch ( $Build ) {
+
+        default { $VulnStatus = "Not Vulnerable" }
+
+ }   }
+    Set-ExploitTable $MSBulletin  $VulnStatus
+ 
+
+
+}
+
+function Find-MS13005 {
+
+    $MSBulletin  = "MS13-005"
+    $Path = $env:windir + "\system32\drivers\afd.sys"
+    $VersionInfo = Get-FileVersionInfo($Path)
+    $VersionInfo = $VersionInfo.Split(".")
+    $Build = $VersionInfo[2]
+    $Revision = $VersionInfo[3].Split(" ")[0]
+    if ([int](Get-ItemProperty "registry::HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion").CurrentVersion.split(".")[0] -lt 6 ) {Set-ExploitTable $MSBulletin  $VulnStatus} else {
+    switch ( $Build ) {
+
+        default { $VulnStatus = "Not Vulnerable" }
+
+ }   }
+    Set-ExploitTable $MSBulletin  $VulnStatus
+ 
+
+
+}
+
 
 function Find-MS13053 {
 
@@ -420,6 +506,41 @@ function Find-MS15078 {
 
     }
 
+    Set-ExploitTable $MSBulletin $VulnStatus
+
+}
+
+function Find-MS16014 {
+
+    $MSBulletin = "MS16-014"
+    
+    $Architecture = Get-Architecture
+
+    if ( $Architecture[1] -eq "AMD64" -or $Architecture[0] -eq "32-bit" ) {
+
+        $Path = $env:windir + "\system32\win32kfull.sys"
+
+    } ElseIf ( $Architecture[0] -eq "64-bit" -and $Architecture[1] -eq "x86" ) {
+
+        $Path = $env:windir + "\syswow64\win32kfull.sys"
+
+    } 
+
+    $VersionInfo = Get-FileVersionInfo($Path)
+
+    $VersionInfo = $VersionInfo.Split(".")
+
+    $Build = [int]$VersionInfo[2]
+    $Revision = [int]$VersionInfo[3].Split(" ")[0]
+
+    switch ( $Build ) {
+
+        10240 { $VulnStatus = @("Not Vulnerable","Appears Vulnerable")[ $Revison -lt 16683] }
+        10586 { $VulnStatus = @("Not Vulnerable","Appears Vulnerable")[ $Revision -lt 103 ] }
+        default { $VulnStatus = "Not Vulnerable" }
+
+    }
+    
     Set-ExploitTable $MSBulletin $VulnStatus
 
 }
