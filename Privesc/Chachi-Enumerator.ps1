@@ -1,4 +1,4 @@
-﻿
+
 $banner = @"
      .-----.            .'``-.
     /      ,--          | .- ``-.
@@ -33,72 +33,40 @@ $banner = @"
 
 function Get-Info {
 
-$OS = Get-WmiObject -Class Win32_OperatingSystem 
-$Bios = Get-WmiObject -Class Win32_BIOS 
-$sheetS = Get-WmiObject -Class Win32_ComputerSystem 
-$sheetPU = Get-WmiObject -Class Win32_Processor 
-$IPAddress= (Get-WmiObject Win32_NetworkAdapterConfiguration | ? {$_.ipenabled}).ipaddress 
-$OSRunning = $OS.caption + " " + $OS.OSArchitecture + " SP " + $OS.ServicePackMajorVersion
-$NoOfProcessors=$sheetS.numberofProcessors
-$name=$SheetPU|select name -First 1
-$Manufacturer=$sheetS.Manufacturer
-$Model=$sheetS.Model
-$ProcessorName=$SheetPU|select name -First 1
-$Mac = (Get-WmiObject -class Win32_NetworkAdapter | ? { $_.PhysicalAdapter } ).macaddress
-$date = Get-Date
-$uptime = $OS.ConvertToDateTime($OS.lastbootuptime)
-$sheetPUInfo = $name.Name + " & has " + $sheetPU.NumberOfCores + " Cores & the FSB is " + $sheetPU.ExtClock + " Mhz"
-$sheetPULOAD = $sheetPU.LoadPercentage
-$serialnumer = (Get-WmiObject -Class Win32_BIOS ).serialnumber
-$RAM = (Get-WmiObject -class Win32_ComputerSystem  ).totalphysicalmemory / 1gb
-$ram_round= [math]::Round($ram,0)
-$Disco_duro = $drives.Size / 1gb ; $Disco_duro = [math]::Round($Disco_duro,0) ; $Disco_duro = "$Disco_duro Gb"
-$windows_version = ([environment]::OSVersion).VersionString
-$Dominio = $sheetS.Domain
+$sistema_operativo = (Get-ItemProperty "Registry::HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion").ProductName + " Build " + (Get-ItemProperty "Registry::HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion").CurrentBuild
+$modelo_equipo = (Get-ItemProperty "registry::HKLM\HARDWARE\DESCRIPTION\System\BIOS").SystemProductName
+$controlador_de_dominio = "$env:LOGONSERVER".replace("\\","")
+$nombre_maquina = $env:COMPUTERNAME
+$num_procesadores = ((Get-ItemProperty "registry::HKLM\HARDWARE\DESCRIPTION\System\CentralProcessor\*").Identifier).count
+$procesador = (Get-ItemProperty "registry::HKLM\HARDWARE\DESCRIPTION\System\CentralProcessor\0").ProcessorNameString
+$dominio = $env:USERDNSDOMAIN
+$network = Get-ItemProperty "registry::HKLM\SYSTEM\ControlSet001\Services\Tcpip\Parameters\Interfaces\*" | Select-Object IPAddress, SubnetMask, DefaultGateway,NameServer
 
 $PC = New-Object psobject -Property @{ 
 "Nombre" = $env:COMPUTERNAME
-"Sistema Operativo" = $OSRunning
-"Windows Version" = $windows_version
-"Procesador" = $name.name
-"Modelo" = $Model
+"Sistema Operativo" = $sistema_operativo
+"Procesador" = $procesador
+"Modelo" = $modelo_equipo
 "Dominio" = $Dominio
-"Num. Procesadores" = "$NoOfProcessors"
-"Memoria RAM" = "$ram_round Gb"
-"Direccion IP" = [string]$IPAddress[0]
-"MAC" = $mac
-"Numero de serie" = $serialnumer
-"Disco Duro" = $Disco_duro
+"Num. Procesadores" = $num_procesadores
+"Direccion IP" = $network.ipaddress[0]
+"Mascara de SubRed" = $network.SubnetMask[0]
+"Puerta de Enlace" = $network.DefaultGateway[0]
+"Servidores DNS" = $network.nameserver[0].Replace(","," ")
+"MAC" = ((getmac)[3].split(" ")[0]).replace("-",":")
+"RAM" = (((systeminfo | Select-String "memo")[0]) | Out-String).split(":")[1].Replace(" ","").split("MB")[0] + " MB"
 }
-
-$PC }
+$pc
+}
 function Get-Discosduros {Get-PSDrive | where {$_.Provider -like "Microsoft.PowerShell.Core\FileSystem"}| ft Name,Root}
-function Get-Usuarios {
-$usuarios = (Get-LocalUser | Where-Object {$_.enabled -eq $true}).name
-$grupos = (Get-LocalGroup -Name adminis*).name
-$administradores = Get-LocalGroupMember -Name administradores -ErrorAction SilentlyContinue; if ($administradores.length -eq 0 ) {$administradores = Get-LocalGroupMember -Name administrators -ErrorAction SilentlyContinue} 
-
-$Info_usuarios = New-Object psobject -Property @{ 
-"Usuarios" = $usuarios
-"Administradores" = $administradores
-"Grupos Locales" = $grupos
-
-}
-
-$Info_usuarios 
-
-}
 function Get-ConfigRED {
 
 Start-Job -ScriptBlock { 
-ipconfig /all
-Write-Host "`n[+] ================================== Rutas Estaticas =======================================`n"
-route print
 Write-Host "`n[+] ==================================== Tabla ARP ===========================================`n"
 arp -A
 Write-Host "`n[+] ==================================== Conexiones Activas ===========================================`n"
 
-Get-NetTCPConnection | ? {$_.State -eq "Listen"} | Select-Object LocalAddress, Localport, state |  sort localport| Format-Table  } | Wait-Job | Receive-Job
+$listening = netstat -ano | Select-String "LISTENING"| Out-String; $listening  } | Wait-Job | Receive-Job
 
 
 }
@@ -967,8 +935,7 @@ CredManMain
 }
 function Get-Config-Firewall {
 Write-Host "`n[+] ================================== Configuracion de Firewall  ==================================`n"
-netsh firewall show stat
-$f=New-object -comObject HNetCfg.FwPolicy2;($f.rules | where {$_.action -eq "0"} | select name,applicationname,localports)
+netsh firewall show all 
 
 }
 $tareas = schtasks /query /fo LIST /v
@@ -1013,7 +980,7 @@ if ( (test-path "$usuario\appdata\Roaming\mRemoteNG") -eq $true ) {
 Write-Host "`n[+] ================================== Encontrada configuracion de mRemoteNG  ==================================`n"
 Write-Host "[+] $usuario\appdata\Roaming\mRemoteNG`n"
 (ls $usuario\appdata\Roaming\mRemoteNG).FullName
-Write-Host "[+] Herramienta para descifrar `nhttps://github.com/kmahyyg/mremoteng-decrypt"
+Write-Host "`n[+] Herramienta para descifrar `nhttps://github.com/kmahyyg/mremoteng-decrypt"
 
 } else {}
 
@@ -1027,15 +994,22 @@ ls HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | ForEach-Object -P
 function Find-EventCommand {param($string) if ($string -eq $null) {$comandos = (get-WinEvent -FilterHashtable @{LogName = 'Security'} | Select-Object @{name='NewProcessName';expression={ $_.Properties[5].Value }}, @{name='CommandLine';expression={ $_.Properties[8].Value }}).commandline ; $comandos | Out-File $env:temp"\salida.txt" ; $comandos = gc $env:temp"\salida.txt"; $comandos} else {$comandos = (get-WinEvent -FilterHashtable @{LogName = 'Security'} | Select-Object @{name='NewProcessName';expression={ $_.Properties[5].Value }}, @{name='CommandLine';expression={ $_.Properties[8].Value }}).commandline ; $comandos | Out-File $env:temp"\salida.txt" ; $comandos = gc $env:temp"\salida.txt"; $comandos | Select-String $string }}
 function Wifi-Password {
 
-Start-Job -ScriptBlock {(netsh wlan show profiles) | Select-String “\:(.+)$” | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name=”$name” key=clear)} | Select-String “Key Content\W+\:(.+)$” | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} | Format-Table -AutoSize | Out-File $env:temp\wifi.txt}  | Wait-Job | Receive-Job
+if ((Get-WinUserLanguageList)[0].LanguageTag -eq "es-Es"){
+Start-Job -ScriptBlock {(netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name=$name key=clear)} | Select-String "Contenido de la clave\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} | Format-Table -AutoSize | Out-File $env:temp\wifi.txt}  | Wait-Job | Receive-Job
+}
+else{
+Start-Job -ScriptBlock {(netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name=$name key=clear)} | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} | Format-Table -AutoSize | Out-File $env:temp\wifi.txt}  | Wait-Job | Receive-Job
+}
 if ((gc $env:temp\wifi.txt).count -ge 1) {
 write-host "`n[+] ================================== Wifi Passwords  =================================="
 gc $env:temp\wifi.txt
 Remove-Item $env:temp\wifi.txt -ea SilentlyContinue
 
 
-}
-
+}}
+function Espera-Proceso {param($proceso)
+do {sleep -Seconds 2}
+while ((get-process $proceso -ErrorAction SilentlyContinue).count -ge 1)
 
 }
 function Get-DecryptedCpassword {
@@ -1107,10 +1081,9 @@ get-discosduros
 Write-Host "`n[+] ================================== Privilegios del CurrentUser  ==================================`n"
 whoami /priv
 Write-Host "`n[+] ================================== Usuarios Locales  ==================================`n"
-Get-LocalUser | ft Name,Enabled,LastLogon
+net user ; Espera-Proceso "net" ; sleep -Seconds 2
 Write-Host "`n[+] ================================== Grupos Locales  ==================================`n"
-(Get-LocalGroup | Select-Object Name).name 
-Write-Host "`n[+] ================================== Configuracion de Red  ==================================`n"
+net localgroup | Select-String "\*" ; Espera-Proceso "net"
 get-configRED 
 get-webconfig
 Write-Host "`n[+] ================================== Software Instalado  ==================================`n"
@@ -1121,15 +1094,9 @@ Write-Host "`n[+] ================================== Servicios sin Comillas  ===
 Obtenemos-Servicios
 Wifi-Password
 Search-cpassword
-get-autologon
+get-autologon ; sleep -Seconds 4
 get-mremote
 Write-Host "`n[+] ================================== Credenciales del sistema  =================================="
 credman -ShoCred | fl
 get-config-firewall
 }
-
-
-Comprueba-Todo
-
- 
-
