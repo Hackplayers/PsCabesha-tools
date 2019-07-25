@@ -102,8 +102,9 @@ public class Impersonaliza
 	public static void CreateProcessFromParent(int ppid, string command, string argumentos)
     {
         const uint EXTENDED_STARTUPINFO_PRESENT = 0x00080000;
-        const uint CREATE_NEW_CONSOLE = 0x00000010;
-		const int PROC_THREAD_ATTRIBUTE_PARENT_PROCESS = 0x00020000;
+        const uint CREATE_NEW_CONSOLE = 0x08000000;
+	//const uint CREATE_NEW_CONSOLE = 0x00000010; 
+	const int PROC_THREAD_ATTRIBUTE_PARENT_PROCESS = 0x00020000;
 		
 
         var pi = new PROCESS_INFORMATION();
