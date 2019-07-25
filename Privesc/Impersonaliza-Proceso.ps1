@@ -1,4 +1,4 @@
-﻿function Impersonaliza-Proceso {param ($Process_id,$Command)
+function Impersonaliza-Proceso {param ($Process_id,$Command,$arguments)
 $help = @"
 .SYNOPSIS
     Impersonaliza pasandole un PID y el comando a ejecutar.
@@ -406,6 +406,6 @@ namespace Impersonalizador
 "@
 
 Add-Type -TypeDefinition $code -Language CSHARP
-[Impersonaliza]::CreateProcessFromParent($Process_id,$Comand)
+[Impersonaliza]::CreateProcessFromParent($Process_id,$Command)
 
 }
