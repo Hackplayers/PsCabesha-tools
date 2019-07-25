@@ -3,7 +3,7 @@ $help = @"
 .SYNOPSIS
     Impersonaliza pasandole un PID y el comando a ejecutar.
     PowerShell Function: Impersonaliza-Proceso
-    Author: CyberVaca
+    Author: N/A
     Dependencias Requeridas: Ninguna
     Dependencias Opcionales: Ninguna
 .DESCRIPTION
@@ -169,4 +169,4 @@ Add-Type -TypeDefinition $mycode
 
 }
 
-Impersonaliza-Proceso -Process_id (get-process lsass).id -Command cmd.exe -arguments "/k whoami"
+
