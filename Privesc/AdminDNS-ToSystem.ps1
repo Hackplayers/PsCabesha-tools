@@ -1,7 +1,7 @@
 function AdminDNS-ToSystem {param($IP,$PORT)
 $help = @"
 .SYNOPSIS
-    Donut Loader.
+    AdminDNS to System
     PowerShell Function: AdminDNS-ToSystem
     Author: Luis Vacas (CyberVaca)
 
