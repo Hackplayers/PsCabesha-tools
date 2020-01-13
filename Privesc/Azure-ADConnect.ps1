@@ -18,7 +18,7 @@ $help = @"
     Extract credentials from the Azure AD Connect service.
 
 "@
-if ($db -eq $null -or $server -eq $null) {} else {
+if ($db -eq $null -or $server -eq $null) {$help} else {
 $client = new-object System.Data.SqlClient.SqlConnection -ArgumentList "Server = $server; Database = $db; Initial Catalog=$db; 
 Integrated Security = True;"
 $client.Open()
