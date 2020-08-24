@@ -41,6 +41,7 @@ $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Pri
 if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -eq $false) {"You must have elevated privileges to use this module."} else {
 if ($menu -ne $null -or $nocolor -eq $false ) {function informa {param ($msg) ;$Color = [char]27 ; $RED = "[31m" ;$GREEN = "[92m" ; $END = "[0m"; "$Color$GREEN[$color$RED+$Color$GREEN] " + $msg + "$color$END"} } else {function informa {param($msg) "[+] $msg"}}
 
+print-banner $banner
 $openSSHPath = "C:\Program Files\OpenSSH-Win64"
 informa "Modifying environment variable path"
 $addpath = (Get-ItemProperty "registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\").path + $openSSHPath
