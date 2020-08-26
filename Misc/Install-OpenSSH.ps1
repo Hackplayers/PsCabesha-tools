@@ -53,9 +53,9 @@ cd $openSSHPath
 informa "Installing OpenSSH"
 .\install-sshd.ps1
 informa "Generating keys"
-.\ssh-keygen.exe -A
+.\ssh-keygen.exe 
 informa "Starting up services"
-get-service ssh* | start-service  ; sleep -Seconds 3 ; get-service ssh* | start-service
+get-service ssh* | start-service  
 informa "Creating rule for the firewall."
 netsh.exe advfirewall firewall add rule name="SSH" dir=in action=allow protocol=TCP localport=22
 informa "Installation has been completed successfully."
